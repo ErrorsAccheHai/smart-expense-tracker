@@ -12,5 +12,12 @@
     "amount": 12.5,
     "category": "Food",
     "date": "2026-07-31T19:24:54.496Z"
+  },
+  {
+    "id": "ab5bac13-a079-43e8-bfc5-35ac3d63aaa4",
+    "title": "Dinner",
+    "amount": 25,
+    "category": "Food",
+    "date": "2026-07-31T19:27:36.201Z"
   }
 ]
