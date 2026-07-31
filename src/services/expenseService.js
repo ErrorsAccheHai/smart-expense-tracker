@@ -83,6 +83,34 @@ async function getAllExpenses(category) {
   return filtered;
 }
 
+// --- Service: Get total amount of expenses, with optional category filter ---
+async function getTotalExpenses(category) {
+  // Reuse getAllExpenses — it already handles the optional category filter
+  // This avoids duplicating the read + filter logic
+  const expenses = await getAllExpenses(category);
+
+  // .reduce() iterates over every expense and accumulates a running total
+  // Parameters:
+  //   sum      → the running total (starts at 0, the second argument to reduce)
+  //   expense  → the current item in the array on each iteration
+  // On each step: new sum = old sum + this expense's amount
+  // Final result: the grand total of all amounts
+  const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  // Round to 2 decimal places to avoid floating point issues
+  // e.g. 4.5 + 2.1 in JavaScript can produce 6.6000000000000005
+  // parseFloat removes trailing zeros: "6.60" → 6.6
+  const roundedTotal = parseFloat(total.toFixed(2));
+
+  // Return a structured object, not just a number
+  // This gives the client context about what the total refers to
+  return {
+    total: roundedTotal,
+    category: category || 'all', // 'all' when no filter was applied
+    count: expenses.length,       // Bonus: how many expenses were included in the sum
+  };
+}
+
 // Export only the public-facing service functions
 // readExpenses and writeExpenses are internal helpers — we don't export them
-module.exports = { createExpense, getAllExpenses };
+module.exports = { createExpense, getAllExpenses, getTotalExpenses };

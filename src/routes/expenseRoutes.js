@@ -16,5 +16,11 @@ router.post('/', expenseController.createExpense);
 // Express automatically makes req.query available — no extra setup needed
 router.get('/', expenseController.getExpenses);
 
+// Define the route: GET /expenses/total
+// IMPORTANT: This must be registered BEFORE any '/:id' route (added in a future step)
+// If /:id came first, Express would match "total" as an ID value and call the wrong handler
+// Rule of thumb: specific static paths always go above dynamic parameter paths
+router.get('/total', expenseController.getTotalExpenses);
+
 // Export the router so app.js can mount it
 module.exports = router;

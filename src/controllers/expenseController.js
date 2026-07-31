@@ -71,5 +71,23 @@ async function getExpenses(req, res, next) {
   }
 }
 
-// Export both controller functions so the route can use them
-module.exports = { createExpense, getExpenses };
+// --- Controller: GET /expenses/total ---
+// Handles both GET /expenses/total and GET /expenses/total?category=Food
+async function getTotalExpenses(req, res, next) {
+  try {
+    // Read optional category filter from query params — same pattern as getExpenses
+    const { category } = req.query;
+
+    // Delegate to the service
+    const result = await expenseService.getTotalExpenses(category);
+
+    // 200 OK — we're returning computed data derived from existing resources
+    res.status(200).json(result);
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Export all controller functions
+module.exports = { createExpense, getExpenses, getTotalExpenses };
