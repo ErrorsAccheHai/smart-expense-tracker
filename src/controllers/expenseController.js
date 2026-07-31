@@ -89,5 +89,37 @@ async function getTotalExpenses(req, res, next) {
   }
 }
 
+// --- Controller: DELETE /expenses/:id ---
+async function deleteExpense(req, res, next) {
+  try {
+    // req.params contains dynamic segments captured from the URL path
+    // For DELETE /expenses/abc-123  →  req.params = { id: 'abc-123' }
+    const { id } = req.params;
+
+    // Basic guard: reject clearly empty or whitespace-only IDs
+    // .trim() removes leading/trailing spaces before checking
+    if (!id || !id.trim()) {
+      return res.status(400).json({ error: 'Expense ID is required' });
+    }
+
+    // Delegate to the service — returns the deleted expense or null
+    const deletedExpense = await expenseService.deleteExpense(id);
+
+    // If the service returned null, no expense with that ID exists
+    // 404 Not Found: "I understood the request, but this resource doesn't exist"
+    // This is different from 400 — the request itself was valid, just no match
+    if (!deletedExpense) {
+      return res.status(404).json({ error: `Expense with id '${id}' not found` });
+    }
+
+    // 200 OK: deletion succeeded — return the deleted expense as confirmation
+    // The client now knows exactly what was removed without making another request
+    res.status(200).json(deletedExpense);
+
+  } catch (error) {
+    next(error);
+  }
+}
+
 // Export all controller functions
-module.exports = { createExpense, getExpenses, getTotalExpenses };
+module.exports = { createExpense, getExpenses, getTotalExpenses, deleteExpense };

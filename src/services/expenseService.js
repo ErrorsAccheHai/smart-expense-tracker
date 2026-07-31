@@ -111,6 +111,34 @@ async function getTotalExpenses(category) {
   };
 }
 
-// Export only the public-facing service functions
-// readExpenses and writeExpenses are internal helpers — we don't export them
-module.exports = { createExpense, getAllExpenses, getTotalExpenses };
+// --- Service: Delete an expense by ID ---
+// Returns the deleted expense object if found, or null if not found
+// The controller decides what HTTP status to send based on this return value
+async function deleteExpense(id) {
+  const expenses = await readExpenses();
+
+  // findIndex scans the array and returns the position of the first match
+  // Returns -1 if no item matches — this is our "not found" signal
+  // We compare IDs as strings (both sides are already strings, but explicit is safer)
+  const index = expenses.findIndex((expense) => expense.id === id);
+
+  // If findIndex returned -1, no expense has that ID — return null to signal "not found"
+  // The controller will turn this into a 404 response
+  if (index === -1) {
+    return null;
+  }
+
+  // splice(index, 1) removes exactly 1 element at the given index, in place
+  // It returns an array of the removed elements — we take the first (and only) one
+  // e.g. expenses = [A, B, C], splice(1, 1) → expenses becomes [A, C], returns [B]
+  const [deletedExpense] = expenses.splice(index, 1);
+
+  // Persist the updated array (without the deleted item) back to the file
+  await writeExpenses(expenses);
+
+  // Return the deleted expense so the controller can include it in the response
+  return deletedExpense;
+}
+
+// Export all public-facing service functions
+module.exports = { createExpense, getAllExpenses, getTotalExpenses, deleteExpense };

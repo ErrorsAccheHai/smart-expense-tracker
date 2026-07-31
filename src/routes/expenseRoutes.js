@@ -22,5 +22,11 @@ router.get('/', expenseController.getExpenses);
 // Rule of thumb: specific static paths always go above dynamic parameter paths
 router.get('/total', expenseController.getTotalExpenses);
 
+// Define the route: DELETE /expenses/:id
+// :id is a named route parameter — Express captures whatever is in that URL segment
+// and makes it available as req.params.id inside the controller
+// e.g. DELETE /expenses/abc-123  →  req.params.id = 'abc-123'
+router.delete('/:id', expenseController.deleteExpense);
+
 // Export the router so app.js can mount it
 module.exports = router;
