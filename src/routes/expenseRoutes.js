@@ -6,10 +6,13 @@ const router = express.Router();
 // Import the controller that handles expense-related requests
 const expenseController = require('../controllers/expenseController');
 
+// Import validation middleware — runs before the controller on routes that need it
+const { validateCreateExpense } = require('../middleware/validateExpense');
+
 // Define the route: HTTP POST method on the path '/'
-// When this router is mounted at '/expenses' in app.js,
-// the full path becomes POST /expenses
-router.post('/', expenseController.createExpense);
+// validateCreateExpense runs first — if it calls next(), createExpense runs next
+// if validation fails, createExpense never runs
+router.post('/', validateCreateExpense, expenseController.createExpense);
 
 // Define the route: HTTP GET method on the path '/'
 // Handles both GET /expenses and GET /expenses?category=Food

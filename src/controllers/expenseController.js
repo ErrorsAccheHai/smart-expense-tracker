@@ -2,37 +2,17 @@
 const expenseService = require('../services/expenseService');
 
 // --- Controller: POST /expenses ---
-// req  = the incoming HTTP request (contains headers, body, params, etc.)
-// res  = the outgoing HTTP response (we use this to send data back to the client)
-// next = a function to pass errors to Express's error handler (used in try/catch)
+// By the time this runs, the validateCreateExpense middleware has already
+// confirmed that title, amount, and category are present and valid.
+// The controller's only job here is to call the service and send the response.
 async function createExpense(req, res, next) {
   try {
-    // Destructure the expected fields from the request body
-    // If the client sent: { "title": "Lunch", "amount": 12.50, "category": "Food" }
-    // Then: title = "Lunch", amount = 12.50, category = "Food"
+    // Destructure the validated fields from the request body
     const { title, amount, category } = req.body;
-
-    // --- Input Validation ---
-    // We must validate before touching any data
-    // If required fields are missing, respond immediately with 400 Bad Request
-    // 400 means: "The client sent a request with invalid or missing data"
-    if (!title || !amount || !category) {
-      return res.status(400).json({
-        error: 'title, amount, and category are required fields',
-      });
-    }
-
-    // Validate that amount is a positive number
-    // Number() converts the value — if it can't convert, it returns NaN
-    // isNaN checks for that, and we also ensure it's greater than zero
-    if (isNaN(Number(amount)) || Number(amount) <= 0) {
-      return res.status(400).json({
-        error: 'amount must be a positive number',
-      });
-    }
 
     // Delegate to the service layer to create the expense
     // We pass only the validated, clean values — never the raw req.body
+    // Number(amount) ensures the value is a number type, not a string
     const newExpense = await expenseService.createExpense(title, Number(amount), category);
 
     // Respond with 201 Created — this is the correct HTTP status for a successful POST
