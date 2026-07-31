@@ -11,5 +11,10 @@ const expenseController = require('../controllers/expenseController');
 // the full path becomes POST /expenses
 router.post('/', expenseController.createExpense);
 
+// Define the route: HTTP GET method on the path '/'
+// Handles both GET /expenses and GET /expenses?category=Food
+// Express automatically makes req.query available — no extra setup needed
+router.get('/', expenseController.getExpenses);
+
 // Export the router so app.js can mount it
 module.exports = router;

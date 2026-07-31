@@ -62,6 +62,27 @@ async function createExpense(title, amount, category) {
   return newExpense;
 }
 
+// --- Service: Get all expenses, with optional category filter ---
+// The `category` parameter is optional — if not provided, all expenses are returned
+async function getAllExpenses(category) {
+  // Always start by reading everything from the file
+  const expenses = await readExpenses();
+
+  // If no category filter was provided, return the full list immediately
+  if (!category) {
+    return expenses;
+  }
+
+  // Filter the array to only include expenses whose category matches
+  // .toLowerCase() on both sides makes the comparison case-insensitive
+  // e.g. "food", "Food", and "FOOD" all match an expense with category "Food"
+  const filtered = expenses.filter(
+    (expense) => expense.category.toLowerCase() === category.toLowerCase()
+  );
+
+  return filtered;
+}
+
 // Export only the public-facing service functions
 // readExpenses and writeExpenses are internal helpers — we don't export them
-module.exports = { createExpense };
+module.exports = { createExpense, getAllExpenses };

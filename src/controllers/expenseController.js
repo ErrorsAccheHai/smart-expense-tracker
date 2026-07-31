@@ -46,5 +46,30 @@ async function createExpense(req, res, next) {
   }
 }
 
-// Export the controller function so the route can use it
-module.exports = { createExpense };
+// --- Controller: GET /expenses ---
+// Handles both GET /expenses and GET /expenses?category=Food
+async function getExpenses(req, res, next) {
+  try {
+    // req.query is an object containing all query parameters from the URL
+    // For GET /expenses?category=Food  →  req.query = { category: 'Food' }
+    // For GET /expenses                →  req.query = {}  (empty object)
+    // Destructuring gives us undefined if the key doesn't exist — that's fine,
+    // because our service treats undefined as "no filter"
+    const { category } = req.query;
+
+    // Delegate to the service, passing the category (may be undefined — that's OK)
+    const expenses = await expenseService.getAllExpenses(category);
+
+    // 200 OK is correct here — we're retrieving an existing resource, not creating one
+    // We always return an array, even if it's empty []
+    // Returning an empty array is better than 404 for an empty collection —
+    // 404 means "this route doesn't exist", not "no items found"
+    res.status(200).json(expenses);
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Export both controller functions so the route can use them
+module.exports = { createExpense, getExpenses };
