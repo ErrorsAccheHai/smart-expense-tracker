@@ -14,7 +14,12 @@ const { v4: uuidv4 } = require('uuid');
 // __dirname is the directory of THIS file (src/services/)
 // We go up one level (..) to src/, then up again to the project root, then into data/
 // Result: /absolute/path/to/smart-expense-tracker/data/expenses.json
-const DATA_FILE = path.join(__dirname, '..', '..', 'data', 'expenses.json');
+//
+// When running tests (NODE_ENV=test), use a separate file so tests never
+// touch real data and each test run starts from a clean, isolated state
+const DATA_FILE = process.env.NODE_ENV === 'test'
+  ? path.join(__dirname, '..', '..', 'data', 'test-expenses.json')
+  : path.join(__dirname, '..', '..', 'data', 'expenses.json');
 
 // --- Helper: Read all expenses from the JSON file ---
 // This is marked async because readFile is an I/O operation that takes time
