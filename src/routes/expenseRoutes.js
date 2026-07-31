@@ -1,35 +1,144 @@
-// Express Router lets us define routes in separate files and mount them in app.js
-// This keeps app.js clean — it doesn't need to know about every single route
 const express = require('express');
 const router = express.Router();
 
-// Import the controller that handles expense-related requests
 const expenseController = require('../controllers/expenseController');
-
-// Import validation middleware — runs before the controller on routes that need it
 const { validateCreateExpense } = require('../middleware/validateExpense');
 
-// Define the route: HTTP POST method on the path '/'
-// validateCreateExpense runs first — if it calls next(), createExpense runs next
-// if validation fails, createExpense never runs
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /expenses
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @openapi
+ * /expenses:
+ *   post:
+ *     summary: Create a new expense
+ *     description: Adds a new expense to the data store. All three fields are required.
+ *     tags:
+ *       - Expenses
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateExpenseBody'
+ *     responses:
+ *       201:
+ *         description: Expense created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Expense'
+ *       400:
+ *         description: Validation failed — one or more required fields are missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationError'
+ */
 router.post('/', validateCreateExpense, expenseController.createExpense);
 
-// Define the route: HTTP GET method on the path '/'
-// Handles both GET /expenses and GET /expenses?category=Food
-// Express automatically makes req.query available — no extra setup needed
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /expenses
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @openapi
+ * /expenses:
+ *   get:
+ *     summary: Get all expenses
+ *     description: >
+ *       Returns all expenses. Optionally filter by category using the `category`
+ *       query parameter. The filter is case-insensitive.
+ *     tags:
+ *       - Expenses
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter expenses by category (case-insensitive)
+ *         example: Food
+ *     responses:
+ *       200:
+ *         description: A list of expenses (may be empty)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Expense'
+ */
 router.get('/', expenseController.getExpenses);
 
-// Define the route: GET /expenses/total
-// IMPORTANT: This must be registered BEFORE any '/:id' route (added in a future step)
-// If /:id came first, Express would match "total" as an ID value and call the wrong handler
-// Rule of thumb: specific static paths always go above dynamic parameter paths
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /expenses/total
+// Note: registered BEFORE /:id so Express doesn't treat "total" as an ID value
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @openapi
+ * /expenses/total:
+ *   get:
+ *     summary: Get total expense amount
+ *     description: >
+ *       Returns the sum of all expense amounts, the number of expenses included,
+ *       and the category filter applied. Optionally filter by category.
+ *     tags:
+ *       - Expenses
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter totals by category (case-insensitive)
+ *         example: Food
+ *     responses:
+ *       200:
+ *         description: Total calculation result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TotalResponse'
+ */
 router.get('/total', expenseController.getTotalExpenses);
 
-// Define the route: DELETE /expenses/:id
-// :id is a named route parameter — Express captures whatever is in that URL segment
-// and makes it available as req.params.id inside the controller
-// e.g. DELETE /expenses/abc-123  →  req.params.id = 'abc-123'
+// ─────────────────────────────────────────────────────────────────────────────
+// DELETE /expenses/:id
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @openapi
+ * /expenses/{id}:
+ *   delete:
+ *     summary: Delete an expense by ID
+ *     description: Permanently removes the expense with the given ID from the data store.
+ *     tags:
+ *       - Expenses
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The UUID of the expense to delete
+ *         example: 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
+ *     responses:
+ *       200:
+ *         description: Expense deleted successfully — returns the deleted expense
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Expense'
+ *       404:
+ *         description: No expense found with the given ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 router.delete('/:id', expenseController.deleteExpense);
 
-// Export the router so app.js can mount it
 module.exports = router;

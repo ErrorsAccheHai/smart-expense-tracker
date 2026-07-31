@@ -10,13 +10,22 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/tests/**/*.test.js"]
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
   },
-  "keywords": ["expense", "tracker", "rest-api", "express"],
+  "keywords": [
+    "expense",
+    "tracker",
+    "rest-api",
+    "express"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^5.2.1",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.1"
   },
   "devDependencies": {
